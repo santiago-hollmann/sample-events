@@ -1,0 +1,15 @@
+<resources>
+    <dimen name="app_bar_height">180dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
+    <dimen name="small_space">4dp</dimen>
+    <dimen name="medium_space">8dp</dimen>
+    <dimen name="large_space">16dp</dimen>
+    <dimen name="extra_large_space">32dp</dimen>
+    <dimen name="text_material_subheading">16sp</dimen>
+    <dimen name="text_material_title">20sp</dimen>
+    <dimen name="text_material_header">24sp</dimen>
+    <dimen name="text_material_display_1">34sp</dimen>
+    <dimen name="card_radius">4dp</dimen>
+    <dimen name="cover_height">180dp</dimen>
+</resources>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/event_cardview"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="@dimen/card_radius"
+    app:cardUseCompatPadding="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/medium_space">
+
+        <ImageView
+            android:id="@+id/event_img_cover"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/cover_height"
+            android:scaleType="centerCrop" />
+
+        <TextView
+            android:id="@+id/event_txt_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:paddingLeft="@dimen/large_space"
+            android:paddingRight="@dimen/large_space"
+            android:paddingTop="@dimen/medium_space"
+            android:text="DOM. MAR. 5, 4:30 P.M"
+            android:textAllCaps="true"
+            android:textSize="@dimen/text_material_subheading" />
+
+        <TextView
+            android:id="@+id/event_txt_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="2"
+            android:paddingLeft="@dimen/large_space"
+            android:paddingRight="@dimen/large_space"
+            android:paddingTop="@dimen/medium_space"
+            android:text="Best Event Ever Close to Your Zone, Don't Miss It!"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_material_title" />
+
+        <TextView
+            android:id="@+id/event_txt_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/large_space"
+            android:paddingRight="@dimen/large_space"
+            android:paddingTop="@dimen/medium_space"
+            android:text="Free"
+            android:textAllCaps="true"
+            android:textSize="@dimen/text_material_subheading" />
+
+    </LinearLayout>
+</android.support.v7.widget.CardView>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:title="@string/app_name"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:titleTextColor="@color/white" />
+
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/home_coordinator_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:animateLayoutChanges="true"
+        app:layout_behavior="com.shollmann.events-eventbrite.ui.behavior.DefaultCoordinatorLayoutBehavior">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/home_events_recycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="@dimen/large_space"
+            android:paddingLeft="@dimen/large_space"
+            android:paddingRight="@dimen/large_space"
+            android:visibility="visible"
+            app:layout_behavior="com.shollmann.events-eventbrite.ui.behavior.DefaultCoordinatorLayoutBehavior" />
+
+
+        <TextView
+            android:id="@+id/home_txt_no_results"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawablePadding="@dimen/large_space"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="3"
+            android:padding="@dimen/large_space"
+            android:text="@string/no_results_for_that_location"
+            android:textSize="@dimen/text_material_header"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/home_txt_wait_first_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="3"
+            android:padding="@dimen/large_space"
+            android:text="@string/home_tell_us_what_you_are_looking_for"
+            android:textSize="@dimen/text_material_header" />
+    </android.support.design.widget.CoordinatorLayout>
+</LinearLayout>
