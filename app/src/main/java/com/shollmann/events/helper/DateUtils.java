@@ -1,6 +1,7 @@
 package com.shollmann.events.helper;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -67,5 +68,16 @@ public class DateUtils {
 
     public static java.util.Date parseDate(long dateInMilliseconds) {
         return new java.util.Date(dateInMilliseconds);
+    }
+
+    public static String getEventDate(String serverDate) {
+        String dateInString = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+                .format(serverDate);
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE, MMM d, ''yy");
+        try {
+            return formatter.parse(dateInString).toString();
+        } catch (ParseException e) {
+            return Constants.EMPTY_STRING;
+        }
     }
 }

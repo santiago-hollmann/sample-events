@@ -10,12 +10,15 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
         android:orientation="vertical"
         android:paddingBottom="@dimen/medium_space">
 
         <ImageView
             android:id="@+id/event_img_cover"
             android:layout_width="match_parent"
+            android:background="@color/lightGray"
             android:layout_height="@dimen/cover_height"
             android:scaleType="centerCrop" />
 

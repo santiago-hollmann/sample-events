@@ -115,9 +115,7 @@ public abstract class BaseApi<T> {
     }
 
     public synchronized <CT> BaseApiCall<CT> registerCall(CallId callId, CachePolicy cachePolicy, Callback<CT> callback, Type responseType) {
-//        LogInternal.logBaseApiCall("register-call", callId.toString());
         if (ongoingCalls.containsKey(callId)) {
-//            LogInternal.logBaseApiCall("pre-existing call detected", callId.toString());
             cancelCall(callId);
         }
         BaseApiCall<CT> newCall = new BaseApiCall<>(this, callId, cachePolicy, callback, responseType);
@@ -132,10 +130,8 @@ public abstract class BaseApi<T> {
         BaseApiCall ongoingCall = ongoingCalls.get(callId);
         if (ongoingCall != null) {
             ongoingCall.updateCallback(callback);
-//            LogInternal.logBaseApiCall("register-callback", callId.toString());
             return true;
         } else {
-//            LogInternal.logBaseApiCall("register-callback ignored", callId.toString(), Log.DEBUG);
             return false;
         }
     }
@@ -144,10 +140,8 @@ public abstract class BaseApi<T> {
         BaseApiCall ongoingCall = ongoingCalls.get(callId);
         if (ongoingCall != null) {
             ongoingCall.removeCallback();
-//            LogInternal.logBaseApiCall("unregister-callback", callId.toString());
             return true;
         } else {
-//            LogInternal.logBaseApiCall("unregister-callback ignored", callId.toString(), Log.DEBUG);
             return false;
         }
     }
@@ -155,14 +149,12 @@ public abstract class BaseApi<T> {
     public synchronized void cancelCalls(CallOrigin callOrigin) {
         Set<CallId> ongoingCallIds = ongoingCalls.keySet();
         if (ongoingCallIds != null && ongoingCallIds.size() > 0) {
-//            LogInternal.logBaseApiCall("cancel-calls", callOrigin.name());
             for (CallId callId : ongoingCallIds) {
                 if (callId.getOrigin() == callOrigin) {
                     cancelCall(callId);
                 }
             }
         } else {
-//            LogInternal.logBaseApiCall("cancel-calls ignored", callOrigin.name(), Log.DEBUG);
         }
     }
 
@@ -171,9 +163,7 @@ public abstract class BaseApi<T> {
         if (ongoingCall != null) {
             ongoingCall.cancelCall();
             ongoingCalls.remove(callId);
-//            LogInternal.logBaseApiCall("cancel-call", callId.toString(), Log.INFO);
         } else {
-//            LogInternal.logBaseApiCall("cancel-call ignored", callId.toString(), Log.DEBUG);
         }
     }
 
@@ -181,9 +171,7 @@ public abstract class BaseApi<T> {
         BaseApiCall ongoingCall = ongoingCalls.get(callId);
         if (ongoingCall != null) {
             ongoingCalls.remove(callId);
-//            LogInternal.logBaseApiCall("remove-call done", callId.toString(), Log.DEBUG);
         } else {
-//            LogInternal.logBaseApiCall("remove-call ignored", callId.toString(), Log.DEBUG);
         }
     }
 
@@ -192,7 +180,6 @@ public abstract class BaseApi<T> {
         try {
             requestBytes = (new Gson()).toJson(object).getBytes(Constants.UTF_8);
         } catch (Throwable t) {
-//            LogInternal.error(t.toString());
         }
         return new TypedByteArray("application/json", requestBytes);
     }
@@ -201,7 +188,6 @@ public abstract class BaseApi<T> {
         try {
             cache.delete();
         } catch (Exception e) {
-//            LogInternal.error(e.toString());
         }
         initializeHttpCache(DEFAULT_CACHE_DIR_SIZE);
     }

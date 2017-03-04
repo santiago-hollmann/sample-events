@@ -20,17 +20,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:animateLayoutChanges="true"
-        app:layout_behavior="com.shollmann.events-eventbrite.ui.behavior.DefaultCoordinatorLayoutBehavior">
+        app:layout_behavior="com.shollmann.events.ui.behavior.DefaultCoordinatorLayoutBehavior">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/home_events_recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingBottom="@dimen/large_space"
-            android:paddingLeft="@dimen/large_space"
-            android:paddingRight="@dimen/large_space"
+            android:paddingBottom="@dimen/medium_space"
+            android:paddingLeft="@dimen/medium_space"
+            android:paddingRight="@dimen/medium_space"
+            android:paddingTop="@dimen/medium_space"
             android:visibility="visible"
-            app:layout_behavior="com.shollmann.events-eventbrite.ui.behavior.DefaultCoordinatorLayoutBehavior" />
+            app:layout_behavior="com.shollmann.events.ui.behavior.DefaultCoordinatorLayoutBehavior" />
 
 
         <TextView
@@ -57,6 +58,7 @@
             android:maxLines="3"
             android:padding="@dimen/large_space"
             android:text="@string/home_tell_us_what_you_are_looking_for"
-            android:textSize="@dimen/text_material_header" />
+            android:textSize="@dimen/text_material_header"
+            android:visibility="gone" />
     </android.support.design.widget.CoordinatorLayout>
 </LinearLayout>

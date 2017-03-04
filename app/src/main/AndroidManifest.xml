@@ -3,6 +3,7 @@
     package="com.shollmann.events">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <supports-screens
         android:largeScreens="true"

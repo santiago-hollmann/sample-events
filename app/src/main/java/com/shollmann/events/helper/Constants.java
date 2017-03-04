@@ -22,7 +22,7 @@ public class Constants {
     }
 
     public class EventbriteApi {
-        public static final String TOKEN = "";
+        public static final String TOKEN = "VBEQ2ZP7SOEWDHH3PVOI";
         public static final String URL = "https://www.eventbriteapi.com";
     }
 }

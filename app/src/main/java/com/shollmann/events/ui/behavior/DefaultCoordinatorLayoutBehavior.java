@@ -1,4 +1,4 @@
-package com.shollmann.events;
+package com.shollmann.events.ui.behavior;
 
 import android.content.Context;
 import android.support.design.widget.CoordinatorLayout;

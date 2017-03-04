@@ -5,7 +5,7 @@ import com.shollmann.events.api.baseapi.BaseApiCall;
 import com.shollmann.events.api.baseapi.CachePolicy;
 import com.shollmann.events.api.baseapi.CallId;
 import com.shollmann.events.api.contract.EventbriteApiContract;
-import com.shollmann.events.api.model.Event;
+import com.shollmann.events.api.model.PaginatedEvents;
 import com.shollmann.events.helper.Constants;
 
 import retrofit.Callback;
@@ -22,12 +22,12 @@ public class EventbriteApi extends BaseApi<EventbriteApiContract> {
         request.addQueryParam("token", Constants.EventbriteApi.TOKEN);
     }
 
-    public void getEvents(String query, double lat, double lon, CallId callId, Callback<Event> callback) {
+    public void getEvents(String query, double lat, double lon, CallId callId, Callback<PaginatedEvents> callback) {
         CachePolicy cachePolicy = CachePolicy.CACHE_ELSE_NETWORK;
         cachePolicy.setCacheKey(String.format("get_events_%1$s_%2$s_%3$s", query, lat, lon));
         cachePolicy.setCacheTTL(Constants.Time.TEN_MINUTES);
 
-        BaseApiCall<Event> apiCall = registerCall(callId, cachePolicy, callback, Event.class);
+        BaseApiCall<PaginatedEvents> apiCall = registerCall(callId, cachePolicy, callback, PaginatedEvents.class);
 
         if (apiCall != null && apiCall.requiresNetworkCall()) {
             getService().getEvents(query, lat, lon, apiCall);

@@ -4,6 +4,8 @@
     <string name="getting_events">Fetching events...</string>
     <string name="menu_search">Search</string>
     <string name="no_results_for_that_location">We couldn\'t find any event close to you :(</string>
-    <string name="please_enter_a_location">Please, write a valid a location</string>
+    <string name="please_enter_a_valid_search_term">Please, write a valid search term</string>
     <string name="home_tell_us_what_you_are_looking_for">Tap on the magnifier to search for events</string>
+    <string name="paid">Paid</string>
+    <string name="free">Free</string>
 </resources>
