@@ -19,7 +19,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -66,6 +65,7 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
     private RecyclerView recyclerEvents;
     private EventAdapter eventAdapter;
     private PaginatedEvents lastPageLoaded;
+    private String currentQuery;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +94,7 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
 
     private void updateEventsList(List<Event> eventList) {
         eventAdapter.add(eventList);
-        eventAdapter.notifyItemRangeChanged(eventAdapter.getItemCount() - eventList.size(), eventAdapter.getItemCount());
+        eventAdapter.notifyDataSetChanged();
 
         if (recyclerEvents.getVisibility() != View.VISIBLE) {
             recyclerEvents.setVisibility(View.VISIBLE);
@@ -102,10 +102,7 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
     }
 
     private void checkForLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-//            txtLoading.setClickable(false);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
                     ACCESS_COARSE_LOCATION_PERMISSION_REQUEST);
@@ -118,16 +115,10 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
     }
 
     private void getEvents(String query) {
-
         Snackbar.make(coordinatorLayout, R.string.getting_events, Snackbar.LENGTH_SHORT).show();
         CallId getEventsCallId = new CallId(CallOrigin.HOME, CallType.GET_EVENTS);
-//        eventbriteApi.getEvents(query, Double.valueOf(new DecimalFormat("##,###").format(location.getLatitude())), Double.valueOf(new DecimalFormat("###,###").format(location.getLongitude())), getEventsCallId, generateGetEventsCallback());
         eventbriteApi.getEvents(query, location.getLatitude(), location.getLongitude(), lastPageLoaded, getEventsCallId, generateGetEventsCallback());
         PreferencesHelper.setLastSearch(query);
-//        } else {
-        //            Snackbar.make(coordinatorLayout, R.string.please_enter_a_valid_search_term, Snackbar.LENGTH_SHORT).show();
-
-//        }
     }
 
     private Callback<PaginatedEvents> generateGetEventsCallback() {
@@ -185,11 +176,18 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        getEvents(query.trim());
+        resetSearch();
+        currentQuery = query.trim();
+        getEvents(currentQuery);
         searchView.setQuery(Constants.EMPTY_STRING, false);
         searchView.setIconified(true);
         hideKeyboard();
         return true;
+    }
+
+    private void resetSearch() {
+        lastPageLoaded = null;
+        eventAdapter.reset();
     }
 
     @Override
@@ -206,8 +204,7 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(LoadMoreEvents event) {
-        getEvents(Constants.EMPTY_STRING);
-        //TODO implement load more for search term
+        getEvents(currentQuery);
     }
 
     @Override

@@ -52,4 +52,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventViewHolder> {
     public void setKeepLoading(boolean keepLoading) {
         isKeepLoading = keepLoading;
     }
+
+    public void reset() {
+        isKeepLoading = true;
+        listEvents.clear();
+        notifyDataSetChanged();
+    }
 }
