@@ -7,15 +7,21 @@ import android.view.ViewGroup;
 
 import com.shollmann.events.R;
 import com.shollmann.events.api.model.Event;
+import com.shollmann.events.ui.event.LoadMoreEvents;
 import com.shollmann.events.ui.viewholder.EventViewHolder;
 
+import org.greenrobot.eventbus.EventBus;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class EventAdapter extends RecyclerView.Adapter<EventViewHolder> {
     private List<Event> listEvents;
+    private boolean isKeepLoading;
 
-    public EventAdapter(List<Event> listEvents) {
+    public EventAdapter(ArrayList<Event> listEvents) {
         this.listEvents = listEvents;
+        this.isKeepLoading = true;
     }
 
     @Override
@@ -28,6 +34,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventViewHolder> {
 
     @Override
     public void onBindViewHolder(EventViewHolder holder, int position) {
+        if (isKeepLoading && position == listEvents.size() - 10) {
+            EventBus.getDefault().post(new LoadMoreEvents());
+        }
         holder.setEvent(listEvents.get(position));
     }
 
@@ -36,4 +45,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventViewHolder> {
         return listEvents.size();
     }
 
+    public void add(List<Event> eventList) {
+        listEvents.addAll(eventList);
+    }
+
+    public void setKeepLoading(boolean keepLoading) {
+        isKeepLoading = keepLoading;
+    }
 }

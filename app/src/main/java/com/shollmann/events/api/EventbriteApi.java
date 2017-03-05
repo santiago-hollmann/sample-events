@@ -22,15 +22,16 @@ public class EventbriteApi extends BaseApi<EventbriteApiContract> {
         request.addQueryParam("token", Constants.EventbriteApi.TOKEN);
     }
 
-    public void getEvents(String query, double lat, double lon, CallId callId, Callback<PaginatedEvents> callback) {
+    public void getEvents(String query, double lat, double lon, PaginatedEvents lastPageLoaded, CallId callId, Callback<PaginatedEvents> callback) {
+        int pageNumber = lastPageLoaded != null ? lastPageLoaded.getPagination().getPageNumber() + 1 : 1;
         CachePolicy cachePolicy = CachePolicy.CACHE_ELSE_NETWORK;
-        cachePolicy.setCacheKey(String.format("get_events_%1$s_%2$s_%3$s", query, lat, lon));
+        cachePolicy.setCacheKey(String.format("get_events_%1$s_%2$s_%3$s_%4$s", query, lat, lon, pageNumber));
         cachePolicy.setCacheTTL(Constants.Time.TEN_MINUTES);
 
         BaseApiCall<PaginatedEvents> apiCall = registerCall(callId, cachePolicy, callback, PaginatedEvents.class);
 
         if (apiCall != null && apiCall.requiresNetworkCall()) {
-            getService().getEvents(query, lat, lon, apiCall);
+            getService().getEvents(query, lat, lon, pageNumber, apiCall);
         }
     }
 

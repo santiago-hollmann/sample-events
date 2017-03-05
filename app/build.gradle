@@ -29,5 +29,6 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'com.google.code.gson:gson:2.8.0'
+    compile 'org.greenrobot:eventbus:3.0.0'
     compile 'com.squareup.okhttp:okhttp-urlconnection:2.7.5'
 }

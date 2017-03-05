@@ -30,7 +30,9 @@ public class EventViewHolder extends RecyclerView.ViewHolder {
         txtTitle.setText(event.getName().getText());
         txtDate.setText(event.getStart().getLocal());
         txtIsFree.setText(event.getIsFree() ? R.string.free : R.string.paid);
-        Picasso.with(EventbriteApplication.getApplication()).load(event.getLogo().getUrl()).into(imgCover);
+        if (event.getLogo() != null) {
+            Picasso.with(EventbriteApplication.getApplication()).load(event.getLogo().getUrl()).into(imgCover);
+        }
     }
 
 }

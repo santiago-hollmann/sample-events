@@ -38,8 +38,13 @@ import com.shollmann.events.helper.PreferencesHelper;
 import com.shollmann.events.helper.ResourcesHelper;
 import com.shollmann.events.ui.EventbriteApplication;
 import com.shollmann.events.ui.adapter.EventAdapter;
+import com.shollmann.events.ui.event.LoadMoreEvents;
 
-import java.text.DecimalFormat;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.Callback;
@@ -59,6 +64,8 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
     private EventbriteApi eventbriteApi;
     private Location location;
     private RecyclerView recyclerEvents;
+    private EventAdapter eventAdapter;
+    private PaginatedEvents lastPageLoaded;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,20 +76,29 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
         findViews();
         setupTaskDescription();
         setupToolbar();
+        setupRecyclerView();
         checkForLocationPermission();
 
     }
 
-    private void setupRecyclerView(List<Event> eventList) {
+    private void setupRecyclerView() {
         recyclerEvents.setHasFixedSize(true);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerEvents.setLayoutManager(layoutManager);
-
-        EventAdapter eventAdapter = new EventAdapter(eventList);
+        eventAdapter = new EventAdapter(new ArrayList<Event>());
         recyclerEvents.setAdapter(eventAdapter);
 
-        recyclerEvents.setVisibility(View.VISIBLE);
+        recyclerEvents.setVisibility(View.GONE);
+    }
+
+    private void updateEventsList(List<Event> eventList) {
+        eventAdapter.add(eventList);
+        eventAdapter.notifyItemRangeChanged(eventAdapter.getItemCount() - eventList.size(), eventAdapter.getItemCount());
+
+        if (recyclerEvents.getVisibility() != View.VISIBLE) {
+            recyclerEvents.setVisibility(View.VISIBLE);
+        }
     }
 
     private void checkForLocationPermission() {
@@ -97,19 +113,20 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
         } else {
             LocationManager locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
             location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            String lastSearch = PreferencesHelper.getLastSearch();
-            getEvents(TextUtils.isEmpty(lastSearch) ? Constants.EMPTY_STRING : lastSearch);
+            getEvents(Constants.EMPTY_STRING);
         }
     }
 
     private void getEvents(String query) {
+
         Snackbar.make(coordinatorLayout, R.string.getting_events, Snackbar.LENGTH_SHORT).show();
         CallId getEventsCallId = new CallId(CallOrigin.HOME, CallType.GET_EVENTS);
 //        eventbriteApi.getEvents(query, Double.valueOf(new DecimalFormat("##,###").format(location.getLatitude())), Double.valueOf(new DecimalFormat("###,###").format(location.getLongitude())), getEventsCallId, generateGetEventsCallback());
-        eventbriteApi.getEvents(query, location.getLatitude(), location.getLongitude(), getEventsCallId, generateGetEventsCallback());
+        eventbriteApi.getEvents(query, location.getLatitude(), location.getLongitude(), lastPageLoaded, getEventsCallId, generateGetEventsCallback());
         PreferencesHelper.setLastSearch(query);
 //        } else {
-//            Snackbar.make(coordinatorLayout, R.string.please_enter_a_valid_search_term, Snackbar.LENGTH_SHORT).show();
+        //            Snackbar.make(coordinatorLayout, R.string.please_enter_a_valid_search_term, Snackbar.LENGTH_SHORT).show();
+
 //        }
     }
 
@@ -118,7 +135,11 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
 
             @Override
             public void success(PaginatedEvents paginatedEvents, Response response) {
-                setupRecyclerView(paginatedEvents.getEvents());
+                if (paginatedEvents.getEvents().isEmpty()) {
+                    eventAdapter.setKeepLoading(false);
+                }
+                updateEventsList(paginatedEvents.getEvents());
+                lastPageLoaded = paginatedEvents;
             }
 
             @Override
@@ -183,4 +204,21 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(LoadMoreEvents event) {
+        getEvents(Constants.EMPTY_STRING);
+        //TODO implement load more for search term
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
 }

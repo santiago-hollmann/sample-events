@@ -1,6 +1,5 @@
 package com.shollmann.events.api.contract;
 
-import com.shollmann.events.api.model.Event;
 import com.shollmann.events.api.model.PaginatedEvents;
 
 import retrofit.Callback;
@@ -13,6 +12,7 @@ public interface EventbriteApiContract {
             @Query("q") String query,
             @Query("location.latitude") double latitude,
             @Query("location.longitude") double longitude,
+            @Query("page") int pageNumber,
             Callback<PaginatedEvents> callback);
 
 }
