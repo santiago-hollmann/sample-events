@@ -9,7 +9,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -29,10 +28,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.shollmann.events.R;
 import com.shollmann.events.api.EventbriteApi;
 import com.shollmann.events.api.baseapi.CallId;
@@ -51,6 +46,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,11 +71,6 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
     private EventAdapter eventAdapter;
     private PaginatedEvents lastPageLoaded;
     private String currentQuery;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,10 +83,6 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
         setupToolbar();
         setupRecyclerView();
         checkForLocationPermission();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     private void setupRecyclerView() {
@@ -133,7 +121,7 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
     private void getEvents(String query) {
         Snackbar.make(coordinatorLayout, R.string.getting_events, Snackbar.LENGTH_SHORT).show();
         CallId getEventsCallId = new CallId(CallOrigin.HOME, CallType.GET_EVENTS);
-        eventbriteApi.getEvents(query, location.getLatitude(), location.getLongitude(), lastPageLoaded, getEventsCallId, generateGetEventsCallback());
+        eventbriteApi.getEvents(query, getShorterCoordinate(location.getLatitude()), getShorterCoordinate(location.getLongitude()), lastPageLoaded, getEventsCallId, generateGetEventsCallback());
         PreferencesHelper.setLastSearch(query);
     }
 
@@ -228,41 +216,24 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
         getEvents(currentQuery);
     }
 
+    public static double getShorterCoordinate(double coordinate) {
+        DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+        dfs.setDecimalSeparator('.');
+
+        DecimalFormat decimalFormat = new DecimalFormat("###.###", dfs);
+
+        return Double.parseDouble(decimalFormat.format(coordinate));
+    }
+
     @Override
     protected void onStart() {
-        super.onStart();// ATTENTION: This was auto-generated to implement the App Indexing API.
-// See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
+        super.onStart();
         EventBus.getDefault().register(this);
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.start(client, getIndexApiAction());
     }
 
     @Override
     protected void onStop() {
-        super.onStop();// ATTENTION: This was auto-generated to implement the App Indexing API.
-// See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.end(client, getIndexApiAction());
+        super.onStop();
         EventBus.getDefault().unregister(this);
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.disconnect();
-    }
-
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    public Action getIndexApiAction() {
-        Thing object = new Thing.Builder()
-                .setName("Events Page") // TODO: Define a title for the content shown.
-                // TODO: Make sure this auto-generated URL is correct.
-                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
-                .build();
-        return new Action.Builder(Action.TYPE_VIEW)
-                .setObject(object)
-                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
-                .build();
     }
 }
