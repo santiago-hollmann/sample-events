@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -23,8 +25,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.shollmann.events.R;
 import com.shollmann.events.api.EventbriteApi;
 import com.shollmann.events.api.baseapi.CallId;
@@ -66,6 +74,11 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
     private EventAdapter eventAdapter;
     private PaginatedEvents lastPageLoaded;
     private String currentQuery;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +92,9 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
         setupRecyclerView();
         checkForLocationPermission();
 
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     private void setupRecyclerView() {
@@ -169,6 +185,11 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
         getMenuInflater().inflate(R.menu.menu_search, menu);
         menuSearch = menu.findItem(R.id.search);
         searchView = (SearchView) MenuItemCompat.getActionView(menuSearch);
+        EditText edtSearch = (EditText) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+        ImageView searchClose = (ImageView) searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
+        searchClose.setImageResource(R.drawable.ic_action_close);
+        edtSearch.setTextColor(Color.WHITE);
+        edtSearch.setHintTextColor(Color.WHITE);
         searchView.setOnQueryTextListener(this);
 
         return super.onPrepareOptionsMenu(menu);
@@ -209,13 +230,39 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
 
     @Override
     protected void onStart() {
-        super.onStart();
+        super.onStart();// ATTENTION: This was auto-generated to implement the App Indexing API.
+// See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
         EventBus.getDefault().register(this);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.start(client, getIndexApiAction());
     }
 
     @Override
     protected void onStop() {
-        super.onStop();
+        super.onStop();// ATTENTION: This was auto-generated to implement the App Indexing API.
+// See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.end(client, getIndexApiAction());
         EventBus.getDefault().unregister(this);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.disconnect();
+    }
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    public Action getIndexApiAction() {
+        Thing object = new Thing.Builder()
+                .setName("Events Page") // TODO: Define a title for the content shown.
+                // TODO: Make sure this auto-generated URL is correct.
+                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+                .build();
+        return new Action.Builder(Action.TYPE_VIEW)
+                .setObject(object)
+                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
+                .build();
     }
 }
