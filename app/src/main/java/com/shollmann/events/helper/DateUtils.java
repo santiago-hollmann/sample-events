@@ -4,11 +4,12 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class DateUtils {
 
-    public static final int MILLISECONDS_IN_A_DAY = 1000 * 60 * 60 * 24;
-    public static final int MILLISECONDS_IN_A_MINUTE = 1000 * 60;
+    private static final int MILLISECONDS_IN_A_DAY = 1000 * 60 * 60 * 24;
+    private static final int MILLISECONDS_IN_A_MINUTE = 1000 * 60;
 
     private static long getMillisForDate(java.util.Date date) {
         return date.getTime();
@@ -66,16 +67,11 @@ public class DateUtils {
         }
     }
 
-    public static java.util.Date parseDate(long dateInMilliseconds) {
-        return new java.util.Date(dateInMilliseconds);
-    }
-
-    public static String getEventDate(String serverDate) {
-        String dateInString = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-                .format(serverDate);
-        SimpleDateFormat formatter = new SimpleDateFormat("EEE, MMM d, ''yy");
+    public static String getEventDate(String dateNaiveIso8601) {
         try {
-            return formatter.parse(dateInString).toString();
+            Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(dateNaiveIso8601);
+            SimpleDateFormat formatter = new SimpleDateFormat("EEE, MMM d, ''yy");
+            return formatter.format(date);
         } catch (ParseException e) {
             return Constants.EMPTY_STRING;
         }

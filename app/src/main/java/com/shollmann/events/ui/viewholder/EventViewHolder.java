@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import com.shollmann.events.R;
 import com.shollmann.events.api.model.Event;
+import com.shollmann.events.helper.DateUtils;
 import com.shollmann.events.ui.EventbriteApplication;
 import com.squareup.picasso.Picasso;
 
@@ -28,7 +29,7 @@ public class EventViewHolder extends RecyclerView.ViewHolder {
 
     public void setEvent(Event event) {
         txtTitle.setText(event.getName().getText());
-        txtDate.setText(event.getStart().getLocal());
+        txtDate.setText(DateUtils.getEventDate(event.getStart().getLocal()));
         txtIsFree.setText(event.getIsFree() ? R.string.free : R.string.paid);
         if (event.getLogo() != null) {
             Picasso.with(EventbriteApplication.getApplication()).load(event.getLogo().getUrl()).into(imgCover);
