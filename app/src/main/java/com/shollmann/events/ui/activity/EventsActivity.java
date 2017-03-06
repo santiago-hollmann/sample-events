@@ -132,7 +132,12 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
             public void success(PaginatedEvents paginatedEvents, Response response) {
                 if (paginatedEvents.getEvents().isEmpty()) {
                     eventAdapter.setKeepLoading(false);
+                    if (eventAdapter.getItemCount() == 0) {
+                        txtNoResults.setVisibility(View.VISIBLE);
+                        return;
+                    }
                 }
+                txtNoResults.setVisibility(View.GONE);
                 updateEventsList(paginatedEvents.getEvents());
                 lastPageLoaded = paginatedEvents;
             }
@@ -220,7 +225,7 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
         DecimalFormatSymbols dfs = new DecimalFormatSymbols();
         dfs.setDecimalSeparator('.');
 
-        DecimalFormat decimalFormat = new DecimalFormat("###.###", dfs);
+        DecimalFormat decimalFormat = new DecimalFormat(Constants.COORDINATES_FORMAT, dfs);
 
         return Double.parseDouble(decimalFormat.format(coordinate));
     }
