@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -46,14 +47,15 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class EventsActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
     private static final int NO_FLAGS = 0;
@@ -71,12 +73,22 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
     private EventAdapter eventAdapter;
     private PaginatedEvents lastPageLoaded;
     private String currentQuery;
+    private CallId getEventsCallId;
+
+    public static double getShorterCoordinate(double coordinate) {
+        DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+        dfs.setDecimalSeparator('.');
+
+        DecimalFormat decimalFormat = new DecimalFormat(Constants.COORDINATES_FORMAT, dfs);
+
+        return Double.parseDouble(decimalFormat.format(coordinate));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        eventbriteApi = EventbriteApplication.getApplication().getEventbriteApi();
+        eventbriteApi = EventbriteApplication.getApplication().getApiEventbrite();
 
         findViews();
         setupTaskDescription();
@@ -114,14 +126,23 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
         } else {
             LocationManager locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
             location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            getEvents(Constants.EMPTY_STRING);
+            getEvents(null);
         }
     }
 
+
     private void getEvents(String query) {
         Snackbar.make(coordinatorLayout, R.string.getting_events, Snackbar.LENGTH_SHORT).show();
-        CallId getEventsCallId = new CallId(CallOrigin.HOME, CallType.GET_EVENTS);
-        eventbriteApi.getEvents(query, getShorterCoordinate(location.getLatitude()), getShorterCoordinate(location.getLongitude()), lastPageLoaded, getEventsCallId, generateGetEventsCallback());
+        getEventsCallId = new CallId(CallOrigin.HOME, CallType.GET_EVENTS);
+        Callback<PaginatedEvents> callback = generateGetEventsCallback();
+        eventbriteApi.registerCallback(getEventsCallId, callback);
+        try {
+            eventbriteApi.getEvents(query, getShorterCoordinate(37.773972), getShorterCoordinate(-122.431297
+            ), lastPageLoaded, getEventsCallId, callback);
+        } catch (IOException e) {
+            //TODO
+            e.printStackTrace();
+        }
         PreferencesHelper.setLastSearch(query);
     }
 
@@ -129,7 +150,8 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
         return new Callback<PaginatedEvents>() {
 
             @Override
-            public void success(PaginatedEvents paginatedEvents, Response response) {
+            public void onResponse(Call<PaginatedEvents> call, Response<PaginatedEvents> response) {
+                PaginatedEvents paginatedEvents = response.body();
                 if (paginatedEvents.getEvents().isEmpty()) {
                     eventAdapter.setKeepLoading(false);
                     if (eventAdapter.getItemCount() == 0) {
@@ -143,7 +165,7 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
             }
 
             @Override
-            public void failure(RetrofitError error) {
+            public void onFailure(Call<PaginatedEvents> call, Throwable t) {
                 handleGetEventsFailure();
             }
         };
@@ -167,10 +189,12 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
     }
 
     private void setupTaskDescription() {
-        Bitmap icon = BitmapFactory.decodeResource(ResourcesHelper.getResources(),
-                R.mipmap.ic_launcher);
-        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(ResourcesHelper.getString(R.string.app_name), icon, ResourcesHelper.getResources().getColor(R.color.colorPrimary));
-        this.setTaskDescription(taskDescription);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bitmap icon = BitmapFactory.decodeResource(ResourcesHelper.getResources(),
+                    R.mipmap.ic_launcher);
+            ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(ResourcesHelper.getString(R.string.app_name), icon, ResourcesHelper.getResources().getColor(R.color.colorPrimary));
+            this.setTaskDescription(taskDescription);
+        }
     }
 
     @Override
@@ -221,15 +245,6 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
         getEvents(currentQuery);
     }
 
-    public static double getShorterCoordinate(double coordinate) {
-        DecimalFormatSymbols dfs = new DecimalFormatSymbols();
-        dfs.setDecimalSeparator('.');
-
-        DecimalFormat decimalFormat = new DecimalFormat(Constants.COORDINATES_FORMAT, dfs);
-
-        return Double.parseDouble(decimalFormat.format(coordinate));
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -239,6 +254,7 @@ public class EventsActivity extends AppCompatActivity implements SearchView.OnQu
     @Override
     protected void onStop() {
         super.onStop();
+        eventbriteApi.unregisterCallback(getEventsCallId);
         EventBus.getDefault().unregister(this);
     }
 }

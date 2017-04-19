@@ -2,7 +2,7 @@ package com.shollmann.events.db;
 
 import android.content.Context;
 
-public class CachingDbHelper extends DbHelperTemplate {
+public class CachingDbHelper extends DbHelper {
     private final static int DB_VERSION = 4;
     private final static String DB_NAME = "eventsDatabase";
     private final static String TABLE_NAME = "cache";
