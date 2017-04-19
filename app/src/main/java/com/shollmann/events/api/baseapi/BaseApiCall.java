@@ -1,5 +1,7 @@
 package com.shollmann.events.api.baseapi;
 
+import android.text.TextUtils;
+
 import com.shollmann.events.db.CachingDbHelper;
 import com.shollmann.events.db.DbItem;
 import com.shollmann.events.ui.EventbriteApplication;
@@ -7,115 +9,112 @@ import com.shollmann.events.ui.EventbriteApplication;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class BaseApiCall<T> implements Callback<T> {
 
     private CachingDbHelper cachingDb;
-    BaseApi baseApi;
+    private Api api;
     private CallId callId;
-    private CachePolicy cachePolicy;
+    private Cache cache;
     private Callback<T> callback;
-    Type responseType;
+    private Type responseType;
 
     private boolean isCancelled = false;
 
-    private T pendingResult = null;
-    private Response pendingResponse = null;
-    private RetrofitError pendingError = null;
+    private Response<T> pendingResponse = null;
+    private Call<T> pendingCall = null;
+    private Throwable pendingError = null;
 
-    public BaseApiCall(BaseApi baseApi, CallId callId, CachePolicy cachePolicy, Callback<T> callback, Type responseType) {
+    BaseApiCall(Api api, CallId callId, Cache cache, Callback<T> callback, Type responseType) {
         this.cachingDb = EventbriteApplication.getApplication().getCachingDbHelper();
-        this.baseApi = baseApi;
+        this.api = api;
         this.callId = callId;
-        this.cachePolicy = cachePolicy;
+        this.cache = cache;
         this.callback = callback;
         this.responseType = responseType;
     }
 
+
     public boolean requiresNetworkCall() {
-        if (cachePolicy == CachePolicy.NETWORK_ONLY || cachePolicy == CachePolicy.NETWORK_ELSE_ANY_CACHE) {
+        if (cache.policy() == Cache.Policy.NETWORK_ONLY || cache.policy() == Cache.Policy.NETWORK_ELSE_ANY_CACHE) {
             return true;
         }
-        DbItem<T> cachedResponse = cachingDb.getDbItem(cachePolicy.getCacheKey(), responseType);
+
+        DbItem<T> cachedResponse = cachingDb.getDbItem(cache.key(), responseType);
         if (cachedResponse == null) {
             return true;
         }
-        if (!cachedResponse.isExpired(cachePolicy.getCacheTTL())) {
-            success(cachedResponse.getObject(), null);
+
+        if (!cachedResponse.isExpired(cache.ttl())) {
+            onResponse(null, Response.success(cachedResponse.getObject()));
             return false;
-        } else if (cachePolicy == CachePolicy.ANY_CACHE_THEN_NETWORK) {
-            success(cachedResponse.getObject(), null);
-            if (cachePolicy != CachePolicy.ANY_CACHE_THEN_NETWORK) {
-                return false;
-            }
+        } else if (cache.policy() == Cache.Policy.ANY_CACHE_THEN_NETWORK) {
+            onResponse(null, Response.success(cachedResponse.getObject()));
         }
         return true;
     }
 
     @Override
-    public synchronized void success(T result, Response response) {
+    public void onResponse(Call<T> call, Response<T> response) {
         if (response != null) { //response != null means that the result is from net and not from cache
-            if (cachePolicy.getCacheKey() != null && result instanceof Serializable) {
-                cachingDb.insert(cachePolicy.getCacheKey(), (Serializable) result, cachePolicy.getCacheTTL());
-            } else {
+            if (!TextUtils.isEmpty(cache.key()) && response.body() instanceof Serializable) {
+                cachingDb.insert(cache.key(), response.body(), cache.ttl());
             }
         }
+
         if (!isCancelled) {
             if (callback != null) {
-                callback.success(result, response);
-                baseApi.removeCall(callId);
+                callback.onResponse(call, response);
+                api.removeCall(callId);
             } else {
-                pendingResult = result;
                 pendingResponse = response;
+                pendingCall = call;
             }
-        } else {
         }
     }
 
     @Override
-    public synchronized void failure(RetrofitError error) {
+    public void onFailure(Call<T> call, Throwable t) {
         if (!isCancelled) {
             if (callback != null) {
-                if (cachePolicy == CachePolicy.CACHE_ELSE_NETWORK_ELSE_ANY_CACHE || cachePolicy == CachePolicy.NETWORK_ELSE_ANY_CACHE) {
-                    DbItem<T> cachedResponse = cachingDb.getDbItem(cachePolicy.getCacheKey(), responseType);
+                if (cache.policy() == Cache.Policy.CACHE_ELSE_NETWORK_ELSE_ANY_CACHE || cache.policy() == Cache.Policy.NETWORK_ELSE_ANY_CACHE) {
+                    DbItem<T> cachedResponse = cachingDb.getDbItem(cache.key(), responseType);
                     if (cachedResponse == null) {
-                        callback.failure(error);
+                        callback.onFailure(call, t);
                     } else {
-                        callback.success(cachedResponse.getObject(), null);
+                        callback.onResponse(call, Response.success(cachedResponse.getObject()));
                     }
                 } else {
-                    callback.failure(error);
+                    callback.onFailure(call, t);
                 }
-                baseApi.removeCall(callId);
+                api.removeCall(callId);
             } else {
-                pendingError = error;
+                pendingError = t;
             }
-        } else {
         }
     }
 
-    public synchronized void cancelCall() {
+    synchronized void cancelCall() {
         removeCallback();
         isCancelled = true;
-        baseApi.removeCall(callId);
+        api.removeCall(callId);
     }
 
-    public synchronized void removeCallback() {
+    synchronized void removeCallback() {
         this.callback = null;
     }
 
-    public synchronized void updateCallback(Callback<T> callback) {
+    synchronized void updateCallback(Callback<T> callback) {
         this.callback = callback;
         if (!isCancelled && callback != null) {
             if (pendingResponse != null) {
-                success(pendingResult, pendingResponse);
+                onResponse(pendingCall, pendingResponse);
             } else if (pendingError != null) {
-                failure(pendingError);
+                onFailure(pendingCall, pendingError);
             }
         }
     }
-
 }

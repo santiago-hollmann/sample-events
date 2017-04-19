@@ -1,37 +1,42 @@
 package com.shollmann.events.api;
 
-import com.shollmann.events.api.baseapi.BaseApi;
+import com.shollmann.events.api.baseapi.Api;
 import com.shollmann.events.api.baseapi.BaseApiCall;
-import com.shollmann.events.api.baseapi.CachePolicy;
+import com.shollmann.events.api.baseapi.Cache;
 import com.shollmann.events.api.baseapi.CallId;
 import com.shollmann.events.api.contract.EventbriteApiContract;
 import com.shollmann.events.api.model.PaginatedEvents;
-import com.shollmann.events.helper.Constants;
 
-import retrofit.Callback;
-import retrofit.RequestInterceptor;
+import java.io.IOException;
 
-public class EventbriteApi extends BaseApi<EventbriteApiContract> {
+import retrofit2.Callback;
 
-    public EventbriteApi(String baseUrl) {
-        super(baseUrl, EventbriteApiContract.class);
+public class EventbriteApi extends Api<EventbriteApiContract> {
+
+    public EventbriteApi(Builder builder) {
+        super(builder);
     }
 
-    @Override
-    protected void onRequest(RequestInterceptor.RequestFacade request) {
-        request.addQueryParam("token", Constants.EventbriteApi.TOKEN);
-    }
-
-    public void getEvents(String query, double lat, double lon, PaginatedEvents lastPageLoaded, CallId callId, Callback<PaginatedEvents> callback) {
+    public void getEvents(String query, double lat, double lon, PaginatedEvents lastPageLoaded, CallId callId, Callback<PaginatedEvents> callback) throws IOException {
         int pageNumber = lastPageLoaded != null ? lastPageLoaded.getPagination().getPageNumber() + 1 : 1;
-        CachePolicy cachePolicy = CachePolicy.CACHE_ELSE_NETWORK;
-        cachePolicy.setCacheKey(String.format("get_events_%1$s_%2$s_%3$s_%4$s", query, lat, lon, pageNumber));
-        cachePolicy.setCacheTTL(Constants.Time.TEN_MINUTES);
+        Cache cache = new Cache.Builder()
+                .policy(Cache.Policy.CACHE_ELSE_NETWORK)
+                .ttl(Cache.Time.ONE_MINUTE)
+                .key(String.format("get_events_%1$s_%2$s_%3$s_%4$s", query, lat, lon, pageNumber))
+                .build();
 
-        BaseApiCall<PaginatedEvents> apiCall = registerCall(callId, cachePolicy, callback, PaginatedEvents.class);
+        BaseApiCall<PaginatedEvents> apiCall = registerCall(callId, cache, callback, PaginatedEvents.class);
 
         if (apiCall != null && apiCall.requiresNetworkCall()) {
-            getService().getEvents(query, lat, lon, pageNumber, apiCall);
+            getService().getEvents(query, lat, lon, pageNumber).enqueue(apiCall);
+        }
+    }
+
+    public static class Builder extends Api.Builder {
+        @Override
+        public EventbriteApi build() {
+            super.validate();
+            return new EventbriteApi(this);
         }
     }
 
