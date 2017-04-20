@@ -1,15 +1,11 @@
 package com.shollmann.events.api.baseapi;
 
-import android.text.TextUtils;
-
-import com.shollmann.events.helper.Constants;
-
+import android.support.annotation.NonNull;
 
 public class CallId implements Comparable<CallId> {
 
     private CallOrigin origin;
     private CallType type;
-    private String params;
 
     public CallId(CallOrigin origin, CallType type) {
         this.origin = origin;
@@ -17,35 +13,18 @@ public class CallId implements Comparable<CallId> {
 
     }
 
-    public CallId(CallOrigin origin, CallType type, String params) {
-        this.origin = origin;
-        this.type = type;
-        this.params = params;
-    }
-
-    public CallOrigin getOrigin() {
-        return origin;
-    }
-
-    public CallType getType() {
-        return type;
-    }
-
     @Override
-    public int compareTo(CallId another) {
-        final int EQUAL = 0;
-        if (this.equals(another)) return EQUAL;
+    public int compareTo(@NonNull CallId another) {
+        final int equal = 0;
+        if (this.equals(another)) return equal;
 
         int originComparison = this.origin.compareTo(another.origin);
-        if (originComparison != EQUAL) return originComparison;
+        if (originComparison != equal) return originComparison;
 
         int typeComparison = this.type.compareTo(another.type);
-        if (typeComparison != EQUAL) return typeComparison;
+        if (typeComparison != equal) return typeComparison;
 
-        int paramsComparison = this.params.compareTo(another.params);
-        if (paramsComparison != EQUAL) return paramsComparison;
-
-        return EQUAL;
+        return equal;
     }
 
     @Override
@@ -57,17 +36,17 @@ public class CallId implements Comparable<CallId> {
             return false;
         }
         CallId other = (CallId) obj;
-        return this.origin == other.origin && this.type == other.type && TextUtils.equals(this.params, other.params);
+        return this.origin == other.origin && this.type == other.type;
     }
 
     @Override
     public int hashCode() {
-        return origin.hashCode() + type.hashCode() + (params != null ? params.hashCode() : 0);
+        return origin.hashCode() + type.hashCode();
     }
 
     @Override
     public String toString() {
-        return String.format("%s-%s%s", origin.name(), type.name(), (params != null ? "-" + params.toString() : Constants.EMPTY_STRING));
+        return String.format("%s-%s", origin.name(), type.name());
     }
 
 }

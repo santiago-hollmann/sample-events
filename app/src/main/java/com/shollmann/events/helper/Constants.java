@@ -6,12 +6,6 @@ public class Constants {
     public static final String CACHE = "Cache";
     public static final String COORDINATES_FORMAT = "###.###";
 
-    public class Time {
-        public static final long TEN_SECONDS = 10;
-        public static final long ONE_MINUTE = 10;
-        public static final long TEN_MINUTES = 10 * ONE_MINUTE;
-    }
-
     public class Size {
         public static final long ONE_KIBIBYTE = 1024;
         public static final long ONE_MEBIBYTE = ONE_KIBIBYTE * 1024;
