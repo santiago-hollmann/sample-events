@@ -1,8 +1,9 @@
 package com.shollmann.events.api.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class PaginatedEvents {
+public class PaginatedEvents implements Serializable {
     private Pagination pagination;
     private List<Event> events;
 
